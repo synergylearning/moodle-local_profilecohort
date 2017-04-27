@@ -101,29 +101,47 @@ class profilecohort extends profilefields {
 
         $lastcohortid = null;
         $list = '';
-        $cohortlist = '';
+        $cohortmembers = [];
         foreach ($users as $user) {
             if ($user->cohortid != $lastcohortid) {
-                $lastcohortid = $user->cohortid;
-                if ($cohortlist) {
-                    $list .= html_writer::tag('ul', $cohortlist, ['class' => 'profilecohort-users']);
-                    $cohortlist = '';
+                if ($lastcohortid) {
+                    $list .= $this->output_cohortlist_entry($user->cohortname, $cohortmembers);
                 }
-                $list .= html_writer::tag('li', format_string($user->cohortname), ['class' => 'profilecohort-cohortname']);
+                $lastcohortid = $user->cohortid;
             }
             if ($user->id) {
                 $userurl = new \moodle_url('/user/view.php', ['id' => $user->id]);
-                $username = html_writer::link($userurl, fullname($user));
-                $cohortlist .= html_writer::tag('li', $username);
+                $cohortmembers[] = html_writer::link($userurl, fullname($user));
             }
         }
-        if ($cohortlist) {
-            $list .= html_writer::tag('ul', $cohortlist, ['class' => 'profilecohort-users']);
+        if ($cohortmembers && isset($user)) {
+            $list .= $this->output_cohortlist_entry($user->cohortname, $cohortmembers);
         }
 
-        $out .= html_writer::nonempty_tag('ul', $list, ['class' => 'profilecohort-userlist']);
+        $out .= html_writer::div($list, '', ['id' => 'profilecohort-cohortlist']);
 
         return $out;
+    }
+
+    private function output_cohortlist_entry($cohortname, $cohortmembers) {
+        $out = '';
+
+        // Header.
+        $out .= html_writer::div(format_string($cohortname), 'card-header');
+
+        // Content.
+        if ($cohortmembers) {
+            $content = '';
+            foreach ($cohortmembers as $cohortmember) {
+                $content .= html_writer::tag('li', $cohortmember);
+            }
+            $content = html_writer::tag('ul', $content);
+        } else {
+            $content = get_string('nousers', 'local_profilecohort');
+        }
+        $out .= html_writer::div($content, 'card-block');
+
+        return html_writer::div($out, 'card');
     }
 
     /**
