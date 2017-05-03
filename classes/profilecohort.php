@@ -107,6 +107,7 @@ class profilecohort extends profilefields {
                 if ($lastcohortid) {
                     $list .= $this->output_cohortlist_entry($user->cohortname, $cohortmembers);
                 }
+                $cohortmembers = [];
                 $lastcohortid = $user->cohortid;
             }
             if ($user->id) {
